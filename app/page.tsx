@@ -8,6 +8,8 @@ import type { CategoryId, CityId, MonthKey, MonthRecord } from "../lib/types";
 const STORAGE_KEY = "cakelovely.sync.dashboard.v1";
 const monthLabel = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" });
 
+type View = "dashboard" | "settings";
+
 function emptyRecord(cityId: CityId, month: MonthKey): MonthRecord {
   return {
     cityId,
@@ -54,6 +56,7 @@ export default function Page() {
   const [records, setRecords] = useState<MonthRecord[]>(seedRecords);
   const [activeCity, setActiveCity] = useState<CityId>("cityA");
   const [activeMonth, setActiveMonth] = useState<MonthKey>("2026-06");
+  const [activeView, setActiveView] = useState<View>("dashboard");
   const [hydrated, setHydrated] = useState(false);
   const [syncState, setSyncState] = useState<"local" | "saved">("local");
 
@@ -154,95 +157,221 @@ export default function Page() {
           </div>
 
           <nav className="nav" aria-label="Разделы">
-            <button className="active" type="button"><span>⌂</span>Главная</button>
-            <button type="button"><span>⚙</span>Настройки</button>
+            <button
+              className={activeView === "dashboard" ? "active" : ""}
+              type="button"
+              onClick={() => setActiveView("dashboard")}
+            >
+              <span>⌂</span>Главная
+            </button>
+            <button
+              className={activeView === "settings" ? "active" : ""}
+              type="button"
+              onClick={() => setActiveView("settings")}
+            >
+              <span>⚙</span>Настройки
+            </button>
           </nav>
 
           <div className="settings-summary">
             <div className="label">Категории</div>
             <strong>{categories.length}</strong>
             <small>Для каждой категории есть отдельная цена и количество.</small>
-            <button type="button">Открыть настройки</button>
+            <button type="button" onClick={() => setActiveView("settings")}>Открыть настройки</button>
           </div>
         </aside>
 
-        <section className="main">
-          <header className="topbar">
-            <div className="headline">
-              <div className="label">Добро пожаловать</div>
-              <h2>{greetingTitle()}</h2>
-              <p>Выбери город, внеси продажи по категории, а дашборд посчитает количество и выручку только для этой вкладки.</p>
-            </div>
-
-            <div className="toolbar">
-              <label>
-                <span className="label">Месяц отчета</span>
-                <select value={activeMonth} onChange={(event) => setActiveMonth(event.target.value as MonthKey)}>
-                  {monthOptions.map((month) => (
-                    <option key={month} value={month}>{formatMonthLabel(month)}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </header>
-
-          <div className="city-tabs" aria-label="Города">
-            {cities.map((city) => (
-              <button
-                key={city.id}
-                className={city.id === activeCity ? "city-tab active" : "city-tab"}
-                type="button"
-                onClick={() => setActiveCity(city.id)}
-              >
-                {city.label}
-              </button>
-            ))}
-          </div>
-
-          <section className="priority-metrics" aria-label="Главные показатели месяца">
-            <article className="priority-card sold">
-              <div>
-                <small>Продано за месяц</small>
-                <strong>{sold.toFixed(1)}</strong>
-                <p>в эквиваленте Бенто Standart</p>
+        {activeView === "dashboard" ? (
+          <section className="main">
+            <header className="topbar">
+              <div className="headline">
+                <div className="label">Добро пожаловать</div>
+                <h2>{greetingTitle()}</h2>
+                <p>Выбери город, внеси продажи по категории, а дашборд посчитает количество и выручку только для этой вкладки.</p>
               </div>
-              <div className="cupcake-scene" aria-hidden="true">🎂</div>
-            </article>
 
-            <article className="priority-card revenue">
-              <small>Заработано за месяц</small>
-              <strong>{earned.toLocaleString("ru-RU")} ₴</strong>
-              <p>{currentCityLabel} · {formatMonthLabel(activeMonth)}</p>
-            </article>
+              <div className="toolbar">
+                <label>
+                  <span className="label">Месяц отчета</span>
+                  <select value={activeMonth} onChange={(event) => setActiveMonth(event.target.value as MonthKey)}>
+                    {monthOptions.map((month) => (
+                      <option key={month} value={month}>{formatMonthLabel(month)}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </header>
+
+            <div className="city-tabs" aria-label="Города">
+              {cities.map((city) => (
+                <button
+                  key={city.id}
+                  className={city.id === activeCity ? "city-tab active" : "city-tab"}
+                  type="button"
+                  onClick={() => setActiveCity(city.id)}
+                >
+                  {city.label}
+                </button>
+              ))}
+            </div>
+
+            <section className="priority-metrics" aria-label="Главные показатели месяца">
+              <article className="priority-card sold">
+                <div>
+                  <small>Продано за месяц</small>
+                  <strong>{sold.toFixed(1)}</strong>
+                  <p>в эквиваленте Бенто Standart</p>
+                </div>
+                <div className="cupcake-scene" aria-hidden="true">🎂</div>
+              </article>
+
+              <article className="priority-card revenue">
+                <small>Заработано за месяц</small>
+                <strong>{earned.toLocaleString("ru-RU")} ₴</strong>
+                <p>{currentCityLabel} · {formatMonthLabel(activeMonth)}</p>
+              </article>
+            </section>
+
+            <section className="metrics" aria-label="Ключевые показатели">
+              <article className="metric" style={{ ["--pink" as string]: "#fff1c8" }}>
+                <div className="metric-icon">★</div>
+                <strong>{categories.length}</strong>
+                <small>Категорий в системе</small>
+              </article>
+              <article className="metric" style={{ ["--pink" as string]: "#cdefff" }}>
+                <div className="metric-icon">◎</div>
+                <strong>{topCategory}</strong>
+                <small>Лидер по месяцу</small>
+              </article>
+              <article className="metric" style={{ ["--pink" as string]: "#ccefdc" }}>
+                <div className="metric-icon">◉</div>
+                <strong>{syncState === "saved" ? "Сохранено" : "В работе"}</strong>
+                <small>Статус сохранения</small>
+              </article>
+            </section>
+
+            <section className="workgrid">
+              <div className="panel">
+                <div className="panel-title">
+                  <h3>Цены и количество по категориям</h3>
+                  <span className="label">{currentCityLabel} · {formatMonthLabel(activeMonth)}</span>
+                </div>
+                <p className="panel-note">Бенто Standart считается как 1. Остальное пересчитывается автоматически.</p>
+
+                <div className="entry-grid">
+                  {categories.map((category) => {
+                    const coefficient = categoryCoefficient(currentRecord, category.id);
+                    const price = currentRecord.prices[category.id];
+                    const count = currentRecord.counts[category.id];
+
+                    return (
+                      <article key={category.id} className="entry">
+                        <strong>{category.name}</strong>
+
+                        <div className="entry-row">
+                          <label className="field">
+                            <span className="label">Цена</span>
+                            <input
+                              inputMode="numeric"
+                              value={price || ""}
+                              placeholder="0"
+                              onChange={(event) => updateCategory(category.id, "price", event.target.value)}
+                            />
+                          </label>
+
+                          <label className="field">
+                            <span className="label">Кол-во</span>
+                            <input
+                              inputMode="numeric"
+                              value={count || ""}
+                              placeholder="0"
+                              onChange={(event) => updateCategory(category.id, "count", event.target.value)}
+                            />
+                          </label>
+
+                          <div className="mini-metric">
+                            <span className="label">Коэф.</span>
+                            <strong>{coefficient.toFixed(2)}</strong>
+                          </div>
+
+                          <div className="mini-metric">
+                            <span className="label">Взвешено</span>
+                            <strong>{(count * coefficient).toFixed(1)}</strong>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="right-column">
+                <div className="panel">
+                  <div className="panel-title">
+                    <h3>Сводка</h3>
+                  </div>
+                  <div className="summary-stack">
+                    <div>
+                      <span className="label">Город</span>
+                      <strong>{currentCityLabel}</strong>
+                    </div>
+                    <div>
+                      <span className="label">Месяц</span>
+                      <strong>{formatMonthLabel(activeMonth)}</strong>
+                    </div>
+                    <div>
+                      <span className="label">Сохранение</span>
+                      <strong>{syncState === "saved" ? "Локально сохранено" : "Есть изменения"}</strong>
+                    </div>
+                    <div>
+                      <span className="label">Продано</span>
+                      <strong>{sold.toFixed(1)}</strong>
+                    </div>
+                    <div>
+                      <span className="label">Выручка</span>
+                      <strong>{earned.toLocaleString("ru-RU")} ₴</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
           </section>
+        ) : (
+          <section className="main">
+            <header className="topbar">
+              <div className="headline">
+                <div className="label">Настройки</div>
+                <h2>Учет продаж</h2>
+                <p>Здесь задаются цены категорий и история продаж по месяцам. На главной они не показываются.</p>
+              </div>
+            </header>
 
-          <section className="metrics" aria-label="Ключевые показатели">
-            <article className="metric" style={{ ["--pink" as string]: "#fff1c8" }}>
-              <div className="metric-icon">★</div>
-              <strong>{categories.length}</strong>
-              <small>Категорий в системе</small>
-            </article>
-            <article className="metric" style={{ ["--pink" as string]: "#cdefff" }}>
-              <div className="metric-icon">◎</div>
-              <strong>{topCategory}</strong>
-              <small>Лидер по месяцу</small>
-            </article>
-            <article className="metric" style={{ ["--pink" as string]: "#ccefdc" }}>
-              <div className="metric-icon">◉</div>
-              <strong>{syncState === "saved" ? "Сохранено" : "В работе"}</strong>
-              <small>Статус сохранения</small>
-            </article>
-          </section>
-
-          <section className="workgrid">
-            <div className="panel">
+            <section className="panel">
               <div className="panel-title">
-                <h3>Цены и количество по категориям</h3>
+                <h3>История продаж</h3>
                 <span className="label">{currentCityLabel} · {formatMonthLabel(activeMonth)}</span>
               </div>
-              <p className="panel-note">Бенто Standart считается как 1. Остальное пересчитывается автоматически.</p>
 
-              <div className="entry-grid">
+              <div className="form-grid">
+                <label className="field">
+                  <span className="label">Город</span>
+                  <select value={activeCity} onChange={(event) => setActiveCity(event.target.value as CityId)}>
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id}>{city.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span className="label">Месяц</span>
+                  <select value={activeMonth} onChange={(event) => setActiveMonth(event.target.value as MonthKey)}>
+                    {monthOptions.map((month) => (
+                      <option key={month} value={month}>{formatMonthLabel(month)}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div style={{ marginTop: 16 }} className="entry-grid">
                 {categories.map((category) => {
                   const coefficient = categoryCoefficient(currentRecord, category.id);
                   const price = currentRecord.prices[category.id];
@@ -251,7 +380,6 @@ export default function Page() {
                   return (
                     <article key={category.id} className="entry">
                       <strong>{category.name}</strong>
-
                       <div className="entry-row">
                         <label className="field">
                           <span className="label">Цена</span>
@@ -262,7 +390,6 @@ export default function Page() {
                             onChange={(event) => updateCategory(category.id, "price", event.target.value)}
                           />
                         </label>
-
                         <label className="field">
                           <span className="label">Кол-во</span>
                           <input
@@ -272,12 +399,10 @@ export default function Page() {
                             onChange={(event) => updateCategory(category.id, "count", event.target.value)}
                           />
                         </label>
-
                         <div className="mini-metric">
                           <span className="label">Коэф.</span>
                           <strong>{coefficient.toFixed(2)}</strong>
                         </div>
-
                         <div className="mini-metric">
                           <span className="label">Взвешено</span>
                           <strong>{(count * coefficient).toFixed(1)}</strong>
@@ -287,39 +412,9 @@ export default function Page() {
                   );
                 })}
               </div>
-            </div>
-
-            <div className="right-column">
-              <div className="panel">
-                <div className="panel-title">
-                  <h3>Сводка</h3>
-                </div>
-                <div className="summary-stack">
-                  <div>
-                    <span className="label">Город</span>
-                    <strong>{currentCityLabel}</strong>
-                  </div>
-                  <div>
-                    <span className="label">Месяц</span>
-                    <strong>{formatMonthLabel(activeMonth)}</strong>
-                  </div>
-                  <div>
-                    <span className="label">Сохранение</span>
-                    <strong>{syncState === "saved" ? "Локально сохранено" : "Есть изменения"}</strong>
-                  </div>
-                  <div>
-                    <span className="label">Продано</span>
-                    <strong>{sold.toFixed(1)}</strong>
-                  </div>
-                  <div>
-                    <span className="label">Выручка</span>
-                    <strong>{earned.toLocaleString("ru-RU")} ₴</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </section>
           </section>
-        </section>
+        )}
       </section>
     </main>
   );
