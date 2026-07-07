@@ -3,16 +3,16 @@ export type CityId = "cityA" | "cityB";
 export type CategoryId =
   | "bento_standard"
   | "bento_xl"
-  | "truffles"
-  | "cupcakes"
-  | "set_mini"
   | "set_standard"
+  | "set_mini"
   | "set_maxi"
-  | "set_truffles_mini"
+  | "cupcakes"
   | "set_truffles_standard"
+  | "set_truffles_mini"
   | "set_truffles_maxi"
-  | "moti"
-  | "build_yourself";
+  | "truffles"
+  | "build_yourself"
+  | "mousse_cake";
 
 export type Category = {
   id: CategoryId;
