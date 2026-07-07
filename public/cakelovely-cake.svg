@@ -1,0 +1,29 @@
+<svg width="640" height="640" viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="640" rx="120" fill="white"/>
+  <circle cx="480" cy="138" r="74" fill="#FFC5DA" opacity="0.9"/>
+  <circle cx="160" cy="492" r="90" fill="#FFF0BE" opacity="0.95"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="320" cy="363" rx="190" ry="84" fill="#F6DCC4"/>
+    <path d="M145 332c0-88 78-158 175-158s175 70 175 158v42H145v-42Z" fill="#FFF0D8"/>
+    <path d="M145 329c30-33 70-48 119-44 44 3 67 26 107 27 37 1 70-16 124-45v72H145v-10Z" fill="#F9CBBE"/>
+    <path d="M145 363h350v78c0 55-45 100-100 100H245c-55 0-100-45-100-100v-78Z" fill="#724137"/>
+    <path d="M197 365v166M250 363v179M303 363v182M356 363v182M409 363v167" stroke="#3B211F" stroke-width="22" opacity="0.55"/>
+    <path d="M145 363h350v24H145v-24Z" fill="#8E554A"/>
+    <circle cx="384" cy="154" r="28" fill="#F23F7D"/>
+    <circle cx="344" cy="179" r="15" fill="#FF5E92"/>
+    <circle cx="289" cy="230" r="13" fill="#8D4B3B"/>
+    <circle cx="361" cy="248" r="12" fill="#8D4B3B"/>
+    <path d="M207 283c38-40 149-40 227 0" stroke="#E1BBA7" stroke-width="17" stroke-linecap="round"/>
+  </g>
+  <g opacity="0.9">
+    <path d="M138 205l12 24 26 4-19 18 5 26-24-13-23 13 4-26-19-18 27-4 11-24Z" fill="#F23F7D"/>
+    <path d="M505 454l10 20 23 3-17 16 4 22-20-10-20 10 4-22-16-16 22-3 10-20Z" fill="#58B7E9"/>
+    <circle cx="517" cy="264" r="12" fill="#FFBF1D"/>
+    <circle cx="108" cy="350" r="10" fill="#58B7E9"/>
+  </g>
+  <defs>
+    <filter id="shadow" x="69" y="105" width="502" height="504" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#CE3770" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+</svg>
