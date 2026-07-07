@@ -20,21 +20,6 @@ export const categories: Category[] = [
   { id: "mousse_cake", name: "Мусовый торт" }
 ];
 
-const zeroCounts = {
-  bento_standard: 0,
-  bento_xl: 0,
-  set_standard: 0,
-  set_mini: 0,
-  set_maxi: 0,
-  cupcakes: 0,
-  set_truffles_standard: 0,
-  set_truffles_mini: 0,
-  set_truffles_maxi: 0,
-  truffles: 0,
-  build_yourself: 0,
-  mousse_cake: 0
-};
-
 export const defaultPrices = {
   bento_standard: 200,
   bento_xl: 400,
@@ -50,12 +35,33 @@ export const defaultPrices = {
   mousse_cake: 900
 };
 
+const zeroCounts = {
+  bento_standard: 0,
+  bento_xl: 0,
+  set_standard: 0,
+  set_mini: 0,
+  set_maxi: 0,
+  cupcakes: 0,
+  set_truffles_standard: 0,
+  set_truffles_mini: 0,
+  set_truffles_maxi: 0,
+  truffles: 0,
+  build_yourself: 0,
+  mousse_cake: 0
+};
+
 export const seedRecords: MonthRecord[] = [
   {
     cityId: "cityA",
     month: "2026-06",
     prices: { ...defaultPrices },
     counts: { ...zeroCounts, bento_standard: 10, bento_xl: 10 }
+  },
+  {
+    cityId: "cityA",
+    month: "2026-07",
+    prices: { ...defaultPrices },
+    counts: { ...zeroCounts, bento_standard: 12, bento_xl: 6, set_maxi: 3, cupcakes: 4 }
   },
   {
     cityId: "cityB",
