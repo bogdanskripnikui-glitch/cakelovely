@@ -185,6 +185,14 @@ button, input, textarea, select { font: inherit; }
   line-height: 1;
 }
 
+.priority-card strong {
+  font-size: clamp(30px, 3.6vw, 50px);
+}
+
+.priority-card.revenue strong {
+  font-size: clamp(28px, 3.2vw, 44px);
+}
+
 .settings-summary small {
   color: var(--muted);
   line-height: 1.35;
@@ -211,10 +219,10 @@ button, input, textarea, select { font: inherit; }
 .view { display: none; }
 .view.active { display: grid; gap: 18px; animation: floatIn .35s ease both; }
 
-.topbar {
+topbar {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   gap: 18px;
   padding: 10px 4px 0;
 }
@@ -238,13 +246,17 @@ button, input, textarea, select { font: inherit; }
 
 .toolbar {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   gap: 12px;
   padding: 12px;
   border-radius: 14px;
   background: rgba(255, 255, 255, .72);
   box-shadow: var(--lift);
-  flex: 0 1 320px;
+  flex: 0 1 420px;
+}
+
+.toolbar-month {
+  width: 100%;
 }
 
 .toolbar label,
@@ -286,6 +298,28 @@ button, input, textarea, select { font: inherit; }
   line-height: 1.42;
 }
 
+.field input[type="date"] {
+  padding-right: 10px;
+}
+
+.field input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-right: 0;
+  opacity: .88;
+}
+
+.field input[type="number"] {
+  text-align: left;
+}
+
+.select-field {
+  appearance: none;
+  padding-right: 46px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--hot-dark) 50%), linear-gradient(135deg, var(--hot-dark) 50%, transparent 50%);
+  background-position: calc(100% - 22px) center, calc(100% - 16px) center;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
 .toolbar select:hover,
 .field input:hover,
 .field select:hover,
@@ -310,14 +344,14 @@ button, input, textarea, select { font: inherit; }
 
 .month-trigger {
   width: 100%;
-  min-height: 48px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 14px;
+  padding: 0 14px 0 16px;
   border: 1px solid rgba(244, 209, 222, .9);
-  border-radius: 12px;
+  border-radius: 16px;
   background: #fff;
   color: var(--ink);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8);
@@ -336,14 +370,14 @@ button, input, textarea, select { font: inherit; }
 
 .month-trigger .month-icon {
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 42px;
+  height: 42px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 12px;
   background: #f8edf2;
   color: var(--hot-dark);
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .month-picker.open .month-trigger {
@@ -354,12 +388,13 @@ button, input, textarea, select { font: inherit; }
 .month-popover {
   position: absolute;
   top: calc(100% + 10px);
-  right: 0;
+  left: 0;
   z-index: 999;
-  width: min(330px, calc(100vw - 56px));
-  padding: 14px;
+  width: 100%;
+  min-width: min(416px, calc(100vw - 56px));
+  padding: 16px;
   border: 1px solid rgba(244, 209, 222, .9);
-  border-radius: 16px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, .96);
   box-shadow: 0 18px 48px rgba(34, 22, 27, .12);
   backdrop-filter: blur(16px);
@@ -376,19 +411,19 @@ button, input, textarea, select { font: inherit; }
 }
 
 .month-popover-header strong {
-  font-size: 16px;
+  font-size: 17px;
   letter-spacing: 0;
 }
 
 .month-nav {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #f7f1f4;
   color: var(--ink);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
 }
 
@@ -409,9 +444,9 @@ button, input, textarea, select { font: inherit; }
 }
 
 .month-option {
-  min-height: 42px;
+  min-height: 46px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #faf5f7;
   color: var(--ink);
   cursor: pointer;
@@ -466,7 +501,7 @@ button, input, textarea, select { font: inherit; }
 }
 
 .priority-card.sold {
-  grid-template-columns: minmax(0, 1fr) 130px;
+  grid-template-columns: minmax(0, 1fr) 152px;
   align-items: center;
 }
 
@@ -484,6 +519,18 @@ button, input, textarea, select { font: inherit; }
 .priority-card.sold::after { right: 84px; top: -46px; }
 .priority-card.revenue::after { --bubble: #fff0bf; }
 
+.priority-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.priority-headline {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
 .priority-card small,
 .metric small {
   position: relative;
@@ -495,8 +542,6 @@ button, input, textarea, select { font: inherit; }
 
 .priority-card p {
   margin: 0;
-  position: relative;
-  z-index: 1;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.4;
@@ -505,12 +550,12 @@ button, input, textarea, select { font: inherit; }
 .cupcake-scene {
   position: relative;
   z-index: 1;
-  width: 104px;
-  height: 104px;
+  width: 132px;
+  height: 132px;
   display: grid;
   place-items: center;
   justify-self: center;
-  border-radius: 28px;
+  border-radius: 30px;
   background: rgba(255, 255, 255, .75);
   box-shadow: 0 12px 26px rgba(34, 22, 27, .08);
   overflow: hidden;
@@ -551,7 +596,7 @@ button, input, textarea, select { font: inherit; }
 .metric strong {
   display: block;
   margin-bottom: 6px;
-  font-size: clamp(24px, 2.8vw, 38px);
+  font-size: clamp(24px, 2.8vw, 36px);
 }
 
 .workgrid {
@@ -577,7 +622,7 @@ button, input, textarea, select { font: inherit; }
 .panel-title {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   gap: 14px;
   margin-bottom: 10px;
 }
@@ -618,7 +663,7 @@ button, input, textarea, select { font: inherit; }
 .chart {
   min-height: 340px;
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   gap: 14px;
   padding: 24px 10px 6px;
   border-radius: 18px;
@@ -629,7 +674,7 @@ button, input, textarea, select { font: inherit; }
   min-width: 48px;
   display: grid;
   justify-items: center;
-  align-content: end;
+  align-content: flex-end;
   gap: 10px;
   flex: 1 1 0;
 }
@@ -672,7 +717,7 @@ button, input, textarea, select { font: inherit; }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
   gap: 12px;
 }
 
@@ -699,7 +744,7 @@ button, input, textarea, select { font: inherit; }
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .button-row {
