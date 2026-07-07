@@ -27,10 +27,3 @@ export type MonthRecord = {
   prices: Record<CategoryId, number>;
   counts: Record<CategoryId, number>;
 };
-
-export type DashboardState = {
-  activeCity: CityId;
-  month: MonthKey;
-  categories: Category[];
-  records: MonthRecord[];
-};
