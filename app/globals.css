@@ -352,15 +352,17 @@ button, input { font: inherit; }
 .category-chart {
   min-height: 330px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, max-content);
   align-items: stretch;
+  justify-content: start;
   gap: 14px;
   padding: 24px 10px 8px;
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,246,250,.88));
+  overflow-x: auto;
 }
 .category-chart-group {
-  min-width: 0;
+  min-width: max-content;
   display: grid;
   align-content: end;
   gap: 14px;
@@ -376,9 +378,9 @@ button, input { font: inherit; }
   text-align: center;
 }
 .category-chart-items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
-  align-items: end;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
   gap: 12px;
 }
 .category-bar-row {
@@ -386,7 +388,8 @@ button, input { font: inherit; }
   justify-items: center;
   align-content: end;
   gap: 9px;
-  min-width: 0;
+  width: 72px;
+  min-width: 72px;
 }
 .category-chart-label {
   width: 100%;
@@ -494,6 +497,6 @@ button, input { font: inherit; }
   .city-tabs, .priority-card.sold, .settings-group-grid-2, .settings-group-grid-4 { grid-template-columns: 1fr; }
   .priority-card.sold { justify-items: start; }
   .chart, .category-chart { overflow-x: auto; }
-  .category-chart { grid-template-columns: repeat(4, minmax(180px, 1fr)); }
+  .category-chart { grid-template-columns: repeat(4, max-content); }
   .bar-wrap { min-width: 84px; }
 }
