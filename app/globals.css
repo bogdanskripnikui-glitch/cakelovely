@@ -352,12 +352,34 @@ button, input { font: inherit; }
 .category-chart {
   min-height: 330px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-  align-items: end;
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  align-items: stretch;
+  gap: 14px;
   padding: 24px 10px 8px;
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,246,250,.88));
+}
+.category-chart-group {
+  min-width: 0;
+  display: grid;
+  align-content: end;
+  gap: 14px;
+  padding: 16px 14px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .62);
+}
+.category-chart-group h4 {
+  margin: 0;
+  color: var(--hot-dark);
+  font-size: 18px;
+  font-weight: 950;
+  text-align: center;
+}
+.category-chart-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  align-items: end;
+  gap: 12px;
 }
 .category-bar-row {
   display: grid;
@@ -472,5 +494,6 @@ button, input { font: inherit; }
   .city-tabs, .priority-card.sold, .settings-group-grid-2, .settings-group-grid-4 { grid-template-columns: 1fr; }
   .priority-card.sold { justify-items: start; }
   .chart, .category-chart { overflow-x: auto; }
+  .category-chart { grid-template-columns: repeat(4, minmax(180px, 1fr)); }
   .bar-wrap { min-width: 84px; }
 }
