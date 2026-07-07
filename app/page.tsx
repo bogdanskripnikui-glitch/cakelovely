@@ -291,20 +291,27 @@ export default function Page() {
                     <span className="label">{monthLabel(latestRecord.month)} / {monthLabel(previousMonth(latestRecord.month))}</span>
                   </div>
                   <div className="category-chart" aria-label="Сравнение категорий">
-                    {categories.map((category) => {
-                      const current = Number(latestRecord.counts[category.id] || 0);
-                      const previous = Number(previousRecord?.counts[category.id] || 0);
-                      return (
-                        <div className="category-bar-row" key={category.id}>
-                          <div className="category-chart-label">{categoryName(category.id)}</div>
-                          <div className="paired-bars">
-                            <span className="category-bar current" style={{ height: `${Math.max(8, (current / maxCategoryCount) * 150)}px` }} />
-                            <span className="category-bar previous" style={{ height: `${Math.max(8, (previous / maxCategoryCount) * 150)}px` }} />
-                          </div>
-                          <div className="category-values">{current} / {previous}</div>
+                    {priceGroups.map((group) => (
+                      <section className="category-chart-group" key={group.title} aria-label={group.title}>
+                        <h4>{group.title}</h4>
+                        <div className="category-chart-items">
+                          {group.ids.map((categoryId) => {
+                            const current = Number(latestRecord.counts[categoryId] || 0);
+                            const previous = Number(previousRecord?.counts[categoryId] || 0);
+                            return (
+                              <div className="category-bar-row" key={categoryId}>
+                                <div className="category-chart-label">{categoryName(categoryId)}</div>
+                                <div className="paired-bars">
+                                  <span className="category-bar current" style={{ height: `${Math.max(8, (current / maxCategoryCount) * 150)}px` }} />
+                                  <span className="category-bar previous" style={{ height: `${Math.max(8, (previous / maxCategoryCount) * 150)}px` }} />
+                                </div>
+                                <div className="category-values">{current} / {previous}</div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </section>
+                    ))}
                   </div>
                 </article>
               </section>
