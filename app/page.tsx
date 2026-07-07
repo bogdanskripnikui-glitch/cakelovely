@@ -84,6 +84,10 @@ function recordTotals(record: MonthRecord) {
   );
 }
 
+function hasSales(record: MonthRecord) {
+  return categories.some((category) => Number(record.counts[category.id] || 0) > 0);
+}
+
 function latestPrices(records: MonthRecord[], cityId: CityId, beforeMonth?: MonthKey) {
   const cityRecords = records
     .filter((record) => record.cityId === cityId && (!beforeMonth || record.month < beforeMonth))
@@ -137,7 +141,8 @@ export default function Page() {
   }, [records, activeCity, month]);
 
   const cityRecords = useMemo(() => records.filter((record) => record.cityId === activeCity).sort((a, b) => a.month.localeCompare(b.month)), [records, activeCity]);
-  const latestRecord = cityRecords[cityRecords.length - 1] || activeRecord;
+  const salesRecords = useMemo(() => cityRecords.filter(hasSales), [cityRecords]);
+  const latestRecord = salesRecords[salesRecords.length - 1] || activeRecord;
   const previousRecord = records.find((record) => record.cityId === activeCity && record.month === previousMonth(latestRecord.month));
   const totals = useMemo(() => recordTotals(activeRecord), [activeRecord]);
   const cityLabel = cities.find((city) => city.id === activeCity)?.label || "";
