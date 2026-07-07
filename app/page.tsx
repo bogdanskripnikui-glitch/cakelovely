@@ -8,7 +8,7 @@ type View = "dashboard" | "settings";
 type PriceMap = Record<CategoryId, number>;
 type CountMap = Record<CategoryId, number>;
 
-const STORAGE_KEY = "cakelovely-dashboard-v5";
+const STORAGE_KEY = "cakelovely-dashboard-v6";
 const now = new Date();
 const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}` as MonthKey;
 const monthNames = ["янв.", "февр.", "марта", "апр.", "мая", "июня", "июля", "авг.", "сент.", "окт.", "нояб.", "дек."];
@@ -33,8 +33,19 @@ function normalizeCounts(counts?: Partial<CountMap>): CountMap {
   return Object.fromEntries(categories.map((category) => [category.id, Number(counts?.[category.id] ?? 0)])) as CountMap;
 }
 
-function makeRecord(cityId: CityId, month: MonthKey): MonthRecord {
-  return { cityId, month, prices: normalizePrices(), counts: emptyCounts() };
+function monthLabel(month: MonthKey) {
+  const [year, rawMonth] = month.split("-").map(Number);
+  return `${monthNames[rawMonth - 1] || rawMonth} ${year}`;
+}
+
+function monthRange(year: number) {
+  return monthNames.map((_, index) => `${year}-${String(index + 1).padStart(2, "0")}` as MonthKey);
+}
+
+function previousMonth(month: MonthKey) {
+  const [year, rawMonth] = month.split("-").map(Number);
+  const date = new Date(year, rawMonth - 2, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}` as MonthKey;
 }
 
 function getGreeting() {
@@ -47,15 +58,6 @@ function getGreeting() {
   if (hour >= 12 && hour < 17) return "Добрый день, Дарья";
   if (hour >= 17 && hour < 23) return "Добрый вечер, Дарья";
   return "Доброй ночи, Дарья";
-}
-
-function monthLabel(month: MonthKey) {
-  const [year, rawMonth] = month.split("-").map(Number);
-  return `${monthNames[rawMonth - 1] || rawMonth} ${year}`;
-}
-
-function monthRange(year: number) {
-  return monthNames.map((_, index) => `${year}-${String(index + 1).padStart(2, "0")}` as MonthKey);
 }
 
 function categoryName(categoryId: CategoryId) {
@@ -82,6 +84,22 @@ function recordTotals(record: MonthRecord) {
   );
 }
 
+function latestPrices(records: MonthRecord[], cityId: CityId, beforeMonth?: MonthKey) {
+  const cityRecords = records
+    .filter((record) => record.cityId === cityId && (!beforeMonth || record.month < beforeMonth))
+    .sort((a, b) => b.month.localeCompare(a.month));
+  return normalizePrices(cityRecords[0]?.prices);
+}
+
+function makeRecord(records: MonthRecord[], cityId: CityId, month: MonthKey): MonthRecord {
+  return {
+    cityId,
+    month,
+    prices: latestPrices(records, cityId, month),
+    counts: emptyCounts()
+  };
+}
+
 export default function Page() {
   const [view, setView] = useState<View>("dashboard");
   const [activeCity, setActiveCity] = useState<CityId>("cityA");
@@ -89,6 +107,7 @@ export default function Page() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState(now.getFullYear());
   const [records, setRecords] = useState<MonthRecord[]>(seedRecords);
+  const [savedNotice, setSavedNotice] = useState("");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -98,13 +117,7 @@ export default function Page() {
       if (parsed.activeCity) setActiveCity(parsed.activeCity);
       if (parsed.month) setMonth(parsed.month);
       if (parsed.records) {
-        setRecords(
-          parsed.records.map((record) => ({
-            ...record,
-            prices: normalizePrices(record.prices),
-            counts: normalizeCounts(record.counts)
-          }))
-        );
+        setRecords(parsed.records.map((record) => ({ ...record, prices: normalizePrices(record.prices), counts: normalizeCounts(record.counts) })));
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
@@ -120,37 +133,49 @@ export default function Page() {
   }, [month]);
 
   const activeRecord = useMemo(() => {
-    return records.find((record) => record.cityId === activeCity && record.month === month) || makeRecord(activeCity, month);
+    return records.find((record) => record.cityId === activeCity && record.month === month) || makeRecord(records, activeCity, month);
   }, [records, activeCity, month]);
 
+  const cityRecords = useMemo(() => records.filter((record) => record.cityId === activeCity).sort((a, b) => a.month.localeCompare(b.month)), [records, activeCity]);
+  const latestRecord = cityRecords[cityRecords.length - 1] || activeRecord;
+  const previousRecord = records.find((record) => record.cityId === activeCity && record.month === previousMonth(latestRecord.month));
   const totals = useMemo(() => recordTotals(activeRecord), [activeRecord]);
   const cityLabel = cities.find((city) => city.id === activeCity)?.label || "";
-  const monthlyRows = useMemo(() => {
-    return records
-      .filter((record) => record.cityId === activeCity)
-      .sort((a, b) => a.month.localeCompare(b.month))
-      .map((record) => ({ record, ...recordTotals(record) }));
-  }, [records, activeCity]);
-  const chartRows = monthlyRows.length ? monthlyRows : [{ record: activeRecord, ...totals }];
-  const maxSold = Math.max(1, ...chartRows.map((row) => row.sold));
+  const monthlyRows = cityRecords.length ? cityRecords.map((record) => ({ record, ...recordTotals(record) })) : [{ record: activeRecord, ...totals }];
+  const maxMonthlySold = Math.max(1, ...monthlyRows.map((row) => row.sold));
+  const maxCategoryCount = Math.max(
+    1,
+    ...categories.flatMap((category) => [
+      Number(latestRecord.counts[category.id] || 0),
+      Number(previousRecord?.counts[category.id] || 0)
+    ])
+  );
+
+  function ensureRecord() {
+    const index = records.findIndex((record) => record.cityId === activeCity && record.month === month);
+    if (index >= 0) return { index, record: records[index] };
+    return { index: -1, record: makeRecord(records, activeCity, month) };
+  }
 
   function updateRecord(categoryId: CategoryId, field: "price" | "count", value: string) {
     const numericValue = Number(value || 0);
-    setRecords((current) => {
-      const index = current.findIndex((record) => record.cityId === activeCity && record.month === month);
-      const nextRecord = index >= 0 ? current[index] : makeRecord(activeCity, month);
-      const updated: MonthRecord = {
-        ...nextRecord,
-        prices: normalizePrices(nextRecord.prices),
-        counts: normalizeCounts(nextRecord.counts)
-      };
+    const { index, record } = ensureRecord();
+    const updated: MonthRecord = {
+      ...record,
+      prices: normalizePrices(record.prices),
+      counts: normalizeCounts(record.counts)
+    };
+    if (field === "price") updated.prices[categoryId] = numericValue;
+    if (field === "count") updated.counts[categoryId] = numericValue;
 
-      if (field === "price") updated.prices[categoryId] = numericValue;
-      if (field === "count") updated.counts[categoryId] = numericValue;
+    setRecords((current) => (index >= 0 ? current.map((item, itemIndex) => (itemIndex === index ? updated : item)) : [...current, updated]));
+    setSavedNotice("");
+  }
 
-      if (index >= 0) return current.map((record, recordIndex) => (recordIndex === index ? updated : record));
-      return [...current, updated];
-    });
+  function saveMonth() {
+    const { index, record } = ensureRecord();
+    setRecords((current) => (index >= 0 ? current.map((item, itemIndex) => (itemIndex === index ? record : item)) : [...current, record]));
+    setSavedNotice("Данные сохранены.");
   }
 
   function selectMonth(value: MonthKey) {
@@ -184,7 +209,7 @@ export default function Page() {
           <header className="topbar">
             <div className="headline">
               <p className="eyebrow">Добро пожаловать</p>
-              <h2>{view === "dashboard" ? getGreeting() : "Настройки учета"}</h2>
+              <h2>{view === "dashboard" ? getGreeting() : "История продаж"}</h2>
               <p>Выбери город, месяц и внеси продажи по категориям. Дашборд считает количество и выручку отдельно для каждой вкладки.</p>
             </div>
 
@@ -224,10 +249,8 @@ export default function Page() {
               <section className="priority-metrics" aria-label="Главные показатели">
                 <article className="priority-card sold">
                   <div className="priority-copy">
-                    <div className="priority-line">
-                      <small>Продано за месяц</small>
-                      <strong>{totals.sold.toFixed(1)}</strong>
-                    </div>
+                    <small>Продано за месяц</small>
+                    <strong>{totals.sold.toFixed(1)}</strong>
                     <p>в эквиваленте Бенто Standart</p>
                   </div>
                   <div className="cake-frame" aria-hidden="true">
@@ -242,23 +265,48 @@ export default function Page() {
                 </article>
               </section>
 
-              <section className="panel chart-panel">
-                <div className="panel-title">
-                  <h3>Статистика</h3>
-                  <span className="label">{cityLabel} · по месяцам</span>
-                </div>
-                <div className="chart" aria-label="График продаж по месяцам">
-                  {chartRows.map((row, index) => (
-                    <div className="bar-wrap" key={row.record.month}>
-                      <div className="bar" style={{ height: `${Math.max(24, (row.sold / maxSold) * 270)}px`, animationDelay: `${index * 40}ms` }} />
-                      <div className="bar-label">{monthLabel(row.record.month)}</div>
-                      <div className="bar-stats">
-                        <strong>{row.sold.toFixed(1)}</strong>
-                        <span>{Math.round(row.revenue).toLocaleString("ru-RU")} ₴</span>
+              <section className="stats-grid">
+                <article className="panel chart-panel">
+                  <div className="panel-title">
+                    <h3>Продажи по месяцам</h3>
+                    <span className="label">{cityLabel}</span>
+                  </div>
+                  <div className="chart month-chart" aria-label="График продаж по месяцам">
+                    {monthlyRows.map((row, index) => (
+                      <div className="bar-wrap" key={row.record.month}>
+                        <div className="bar" style={{ height: `${Math.max(24, (row.sold / maxMonthlySold) * 250)}px`, animationDelay: `${index * 40}ms` }} />
+                        <div className="bar-label">{monthLabel(row.record.month)}</div>
+                        <div className="bar-stats">
+                          <strong>{row.sold.toFixed(1)}</strong>
+                          <span>{Math.round(row.revenue).toLocaleString("ru-RU")} ₴</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </article>
+
+                <article className="panel chart-panel">
+                  <div className="panel-title">
+                    <h3>Товары по категориям</h3>
+                    <span className="label">{monthLabel(latestRecord.month)} / {monthLabel(previousMonth(latestRecord.month))}</span>
+                  </div>
+                  <div className="category-chart" aria-label="Сравнение категорий">
+                    {categories.map((category) => {
+                      const current = Number(latestRecord.counts[category.id] || 0);
+                      const previous = Number(previousRecord?.counts[category.id] || 0);
+                      return (
+                        <div className="category-bar-row" key={category.id}>
+                          <div className="category-chart-label">{categoryName(category.id)}</div>
+                          <div className="paired-bars">
+                            <span className="category-bar current" style={{ height: `${Math.max(8, (current / maxCategoryCount) * 150)}px` }} />
+                            <span className="category-bar previous" style={{ height: `${Math.max(8, (previous / maxCategoryCount) * 150)}px` }} />
+                          </div>
+                          <div className="category-values">{current} / {previous}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
               </section>
             </section>
           ) : (
@@ -268,7 +316,7 @@ export default function Page() {
                   <h3>История продаж</h3>
                   <span className="label">{cityLabel} · {monthLabel(month)}</span>
                 </div>
-                <p>Для каждого месяца вручную укажи цену и количество. Коэффициент считается относительно Бенто Standart и не меняет прошлые месяцы.</p>
+                <p>Для каждого месяца вручную укажи цену и количество. Новые месяцы предзаполняются последними введенными ценами, но прошлые месяцы не меняются.</p>
 
                 <div className="settings-group-list">
                   {priceGroups.map((group) => (
@@ -304,6 +352,11 @@ export default function Page() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="save-row">
+                  <button className="save-button" type="button" onClick={saveMonth}>Сохранить данные</button>
+                  <span>{savedNotice}</span>
                 </div>
               </section>
             </section>
