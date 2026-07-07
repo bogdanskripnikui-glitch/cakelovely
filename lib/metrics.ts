@@ -10,6 +10,7 @@ export function categoryCoefficient(record: MonthRecord, categoryId: CategoryId)
   if (categoryId === "bento_standard") {
     return 1;
   }
+
   return base > 0 ? price / base : 0;
 }
 
